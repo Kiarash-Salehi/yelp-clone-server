@@ -12,13 +12,17 @@ const app = express();
 app.use(morgan('common'));
 app.use(express.json());
 app.use(helmet());
-app.use(cors());
+app.use(cors({ origin: process.env.origin || '*' }));
 
-app.get('/', (req, res) => {
-	res.status(200).json({ message: 'Welcome' });
+console.log(path.resolve(__dirname, '..', 'client', 'build'));
+
+app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
+app.get('/*', (req, res) => {
+	res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
 });
 
-app.get('/api/v1/restaurants', async (req, res, next) => {
+// this
+app.post('/api/v1/restaurants', async (req, res, next) => {
 	try {
 		const { rows: restaurants } = await db.query('SELECT * FROM restaurants');
 		res.status(200).json({
@@ -30,7 +34,9 @@ app.get('/api/v1/restaurants', async (req, res, next) => {
 		next(error);
 	}
 });
-app.post('/api/v1/restaurants', async (req, res, next) => {
+
+//this
+app.post('/api/v1/restaurants/add', async (req, res, next) => {
 	try {
 		const { name, location, price_range } = req.body;
 		const {
@@ -50,7 +56,8 @@ app.post('/api/v1/restaurants', async (req, res, next) => {
 	}
 });
 
-app.get('/api/v1/restaurants/:id', async (req, res, next) => {
+// this
+app.post('/api/v1/restaurants/:id', async (req, res, next) => {
 	try {
 		const { rows: restaurant } = await db.query(`SELECT * FROM restaurants WHERE id=$1`, [req.params.id]);
 		const { rows: reviews } = await db.query(`SELECT * FROM reviews WHERE restaurant_id=$1`, [req.params.id]);
