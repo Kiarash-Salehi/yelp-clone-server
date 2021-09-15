@@ -14,12 +14,10 @@ app.use(express.json());
 app.use(helmet());
 app.use(cors({ origin: process.env.origin || '*' }));
 
-console.log(path.resolve(__dirname, '..', 'client', 'build'));
-
 app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
-app.get('/*', (req, res) => {
-	res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
-});
+// app.get('/*', (req, res) => {
+// 	res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
+// });
 
 // this
 app.post('/api/v1/restaurants', async (req, res, next) => {
@@ -71,6 +69,7 @@ app.post('/api/v1/restaurants/:id', async (req, res, next) => {
 		next(error);
 	}
 });
+
 app.put('/api/v1/restaurants/:id', async (req, res, next) => {
 	try {
 		const { name, location, price_range } = req.body;
@@ -93,10 +92,11 @@ app.put('/api/v1/restaurants/:id', async (req, res, next) => {
 		next(error);
 	}
 });
+
 app.delete('/api/v1/restaurants/:id', async (req, res, next) => {
 	try {
-		await db.query('DELETE FROM restaurants WHERE id=$1', [req.params.id]);
 		await db.query('DELETE FROM reviews WHERE restaurant_id=$1', [req.params.id]);
+		await db.query('DELETE FROM restaurants WHERE id=$1', [req.params.id]);
 		const { rows: restaurants } = await db.query('SElECT * FROM restaurants');
 		res.status(200).json({
 			message: 'DELETE request to one restaurant',
